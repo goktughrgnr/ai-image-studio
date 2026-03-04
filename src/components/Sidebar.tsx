@@ -11,7 +11,6 @@ import {
 import type { GenerationSettings, CanvasShape, ArtStyle } from "../App";
 import { MODELS } from "../models";
 import { useState, useRef, useEffect } from "react";
-import { ScrollArea } from "./ScrollArea";
 
 interface SidebarProps {
   settings: GenerationSettings;
@@ -105,7 +104,7 @@ export function Sidebar({
     const el = textareaRef.current;
     if (el) {
       el.style.height = "auto";
-      el.style.height = el.scrollHeight + "px";
+      el.style.height = Math.min(el.scrollHeight, 160) + "px";
     }
   }, [settings.prompt]);
 
@@ -152,7 +151,7 @@ export function Sidebar({
 
   return (
     <aside className="w-72 md:w-80 bg-bg-primary border-r border-border flex flex-col h-full shrink-0">
-      <div className="flex items-center justify-between px-4 pt-3 pb-0">
+      <div className="flex items-center justify-between px-3 pt-2 pb-0">
         <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
           Settings
         </span>
@@ -164,9 +163,9 @@ export function Sidebar({
           <PanelLeftClose className="size-3.5 text-text-muted group-hover:text-pink transition-colors" />
         </button>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 flex flex-col gap-5">
+      <div className="flex-1 min-h-0 overflow-hidden p-3 pt-2 flex flex-col gap-2">
         {/* Engine Selector */}
-        <div className="flex flex-col gap-2" ref={dropdownRef}>
+        <div className="relative flex flex-col gap-1.5" ref={dropdownRef}>
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-pink uppercase tracking-widest">
               Image Model
@@ -179,7 +178,7 @@ export function Sidebar({
           </div>
           <button
             onClick={() => setEngineOpen(!engineOpen)}
-            className={`flex items-center justify-between px-4 py-3 bg-bg-card border-2 rounded-2xl w-full text-left transition-colors ${
+            className={`flex items-center justify-between px-3 py-2 bg-bg-card border-2 rounded-xl w-full text-left transition-colors ${
               engineOpen ? "border-pink" : "border-border"
             }`}
           >
@@ -209,8 +208,8 @@ export function Sidebar({
 
           {/* Dropdown — multi-select */}
           {engineOpen && (
-            <div className="bg-bg-card border-2 border-border rounded-2xl overflow-hidden shadow-xl -mt-1 z-10">
-              <div className="px-4.5 py-2 border-b border-border/50">
+            <div className="absolute top-full left-0 right-0 bg-bg-card border-2 border-border rounded-xl overflow-hidden shadow-xl -mt-1 z-20">
+              <div className="px-3 py-1.5 border-b border-border/50">
                 <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
                   Select multiple to compare
                 </span>
@@ -221,7 +220,7 @@ export function Sidebar({
                   <button
                     key={model.id}
                     onClick={() => toggleEngine(model.id)}
-                    className={`flex items-center justify-between w-full px-4 py-2.5 text-left transition-colors ${
+                    className={`flex items-center justify-between w-full px-3 py-2 text-left transition-colors ${
                       isActive ? "bg-pink/10" : "hover:bg-white/5"
                     }`}
                   >
@@ -266,7 +265,7 @@ export function Sidebar({
         </div>
 
         {/* Prompt */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-pink uppercase tracking-widest">
               Your Dream
@@ -281,21 +280,19 @@ export function Sidebar({
               {isSurpriseLoading ? "Thinking..." : "Surprise Me!"}
             </button>
           </div>
-          <div className="bg-bg-card border-2 border-border rounded-2xl h-[104px] focus-within:border-pink transition-colors overflow-hidden">
-            <ScrollArea className="h-full">
-              <textarea
-                ref={textareaRef}
-                value={settings.prompt}
-                onChange={(e) => onUpdate("prompt", e.target.value)}
-                placeholder="Describe your dream cartoon..."
-                className="px-4 py-3 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none w-full bg-transparent overflow-hidden block"
-              />
-            </ScrollArea>
+          <div className="bg-bg-card border-2 border-border rounded-xl focus-within:border-pink transition-colors overflow-hidden">
+            <textarea
+              ref={textareaRef}
+              value={settings.prompt}
+              onChange={(e) => onUpdate("prompt", e.target.value)}
+              placeholder="Describe your dream cartoon..."
+              className="px-3 py-2 text-sm text-text-primary placeholder:text-text-muted resize-none focus:outline-none w-full bg-transparent block min-h-[80px] max-h-[160px] overflow-y-auto"
+            />
           </div>
         </div>
 
         {/* Negative Prompt */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-pink uppercase tracking-widest">
             No Grumpy Stuff
           </label>
@@ -303,12 +300,12 @@ export function Sidebar({
             value={settings.negativePrompt}
             onChange={(e) => onUpdate("negativePrompt", e.target.value)}
             placeholder="Scary, dark, messy..."
-            className="bg-bg-card border-2 border-border rounded-2xl px-4 py-2 text-sm text-text-primary placeholder:text-text-muted h-9 focus:outline-none focus:border-pink transition-colors w-full"
+            className="bg-bg-card border-2 border-border rounded-xl px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted h-8 focus:outline-none focus:border-pink transition-colors w-full"
           />
         </div>
 
         {/* Canvas Shape */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-pink uppercase tracking-widest">
             Canvas Shape
           </label>
@@ -319,7 +316,7 @@ export function Sidebar({
                 <button
                   key={shape.id}
                   onClick={() => onUpdate("canvasShape", shape.id)}
-                  className={`flex flex-col items-center justify-center gap-1 py-3 rounded-xl border-2 flex-1 transition-all relative ${
+                  className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl border-2 flex-1 transition-all relative ${
                     isActive
                       ? "bg-green/10 border-green"
                       : "bg-bg-card border-border hover:border-text-secondary"
@@ -330,10 +327,10 @@ export function Sidebar({
                       isActive ? "border-green" : "border-slate"
                     } ${
                       shape.id === "square"
-                        ? "size-6"
+                        ? "size-5"
                         : shape.id === "classic"
-                          ? "w-8 h-6"
-                          : "w-4 h-8"
+                          ? "w-7 h-5"
+                          : "w-3.5 h-7"
                     }`}
                   />
                   <span
@@ -353,18 +350,18 @@ export function Sidebar({
         </div>
 
         {/* Art Style */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-pink uppercase tracking-widest">
             Art Style
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             {ART_STYLES.map((style) => {
               const isActive = settings.artStyle === style;
               return (
                 <button
                   key={style}
                   onClick={() => onUpdate("artStyle", style)}
-                  className={`py-2 rounded-xl border-2 text-xs font-bold text-center transition-all capitalize ${
+                  className={`py-1.5 rounded-lg border-2 text-[11px] font-bold text-center transition-all capitalize ${
                     isActive
                       ? "bg-pink border-pink text-white shadow-[2px_2px_0px_0px_black]"
                       : "bg-bg-card border-border text-text-primary hover:border-text-secondary"
@@ -378,18 +375,18 @@ export function Sidebar({
         </div>
 
         {/* Batch Size */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-pink uppercase tracking-widest">
             Batch Size
           </label>
-          <div className="flex items-center justify-between bg-bg-card border-2 border-border rounded-xl p-1.5">
+          <div className="flex items-center justify-between bg-bg-card border-2 border-border rounded-lg p-1">
             <button
               onClick={() =>
                 onUpdate("batchSize", Math.max(1, settings.batchSize - 1))
               }
-              className="size-8 flex items-center justify-center rounded-lg hover:bg-border/30 transition-colors"
+              className="size-7 flex items-center justify-center rounded-md hover:bg-border/30 transition-colors"
             >
-              <Minus className="size-4 text-pink" />
+              <Minus className="size-3.5 text-pink" />
             </button>
             <span className="text-sm font-bold text-text-primary">
               {settings.batchSize}
@@ -398,16 +395,16 @@ export function Sidebar({
               onClick={() =>
                 onUpdate("batchSize", Math.min(10, settings.batchSize + 1))
               }
-              className="size-8 flex items-center justify-center rounded-lg hover:bg-border/30 transition-colors"
+              className="size-7 flex items-center justify-center rounded-md hover:bg-border/30 transition-colors"
             >
-              <Plus className="size-4 text-green" />
+              <Plus className="size-3.5 text-green" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Generate Button */}
-      <div className="border-t-2 border-border bg-bg-primary px-4 py-4">
+      <div className="border-t-2 border-border bg-bg-primary px-3 py-3">
         <button
           onClick={onGenerate}
           disabled={
@@ -415,9 +412,9 @@ export function Sidebar({
             isGenerating ||
             settings.engines.length === 0
           }
-          className="w-full bg-pink rounded-2xl py-3.5 flex items-center justify-center gap-2 text-base font-bold text-white shadow-[0px_4px_0px_0px_#b03463] hover:brightness-110 active:shadow-[0px_2px_0px_0px_#b03463] active:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-pink rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-white shadow-[0px_3px_0px_0px_#b03463] hover:brightness-110 active:shadow-[0px_1px_0px_0px_#b03463] active:translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Sparkles className="size-5" />
+          <Sparkles className="size-4" />
           {isGenerating
             ? "Generating..."
             : settings.engines.length > 1
