@@ -676,10 +676,8 @@ export function Gallery({
                                       (_, i) => (
                                         <div
                                           key={`${gen._id}-skel-${i}`}
-                                          className="aspect-square rounded-xl bg-bg-card/60 flex items-center justify-center animate-pulse"
-                                        >
-                                          <Loader2 className="size-5 text-pink/50 animate-spin" />
-                                        </div>
+                                          className="aspect-square rounded-xl bg-bg-card/60 animate-pulse"
+                                        />
                                       ),
                                     )}
                                 </div>
