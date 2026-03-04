@@ -139,10 +139,11 @@ export const remove = mutation({
   args: { id: v.id("generations") },
   handler: async (ctx, args) => {
     const gen = await ctx.db.get(args.id);
-    if (gen) {
-      const allIds = [...(gen.imageIds ?? []), ...(gen.thumbnailIds ?? []), ...(gen.originalIds ?? [])];
-      await Promise.all(allIds.map((id) => ctx.storage.delete(id)));
+    if (!gen) {
+      throw new Error("Generation not found");
     }
+    const allIds = [...(gen.imageIds ?? []), ...(gen.thumbnailIds ?? []), ...(gen.originalIds ?? [])];
+    await Promise.all(allIds.map((id) => ctx.storage.delete(id)));
     await ctx.db.delete(args.id);
   },
 });

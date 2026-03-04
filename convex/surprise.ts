@@ -7,7 +7,7 @@ export const generatePrompt = action({
   handler: async () => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY not configured");
+      throw new Error("Server configuration error");
     }
 
     const systemPrompt = `You generate image prompts for an AI art studio.
@@ -43,20 +43,19 @@ Return ONLY the prompt. No quotes, labels, or explanation.`;
     );
 
     if (!response.ok) {
-      const errData = await response.text();
-      throw new Error(
-        `Gemini API error ${response.status}: ${sanitizeExternalError(errData)}`,
-      );
+      throw new Error("Failed to generate surprise prompt. Please try again.");
     }
 
     const result = await response.json();
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("No text returned from Gemini");
 
-    return text.trim().replace(/^["']|["']$/g, "");
+    // Sanitize: strip quotes, limit length, remove control characters
+    return text
+      .trim()
+      .replace(/^["']|["']$/g, "")
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+      .slice(0, 500);
   },
 });
 
-function sanitizeExternalError(errorText: string): string {
-  return errorText.replace(/\s+/g, " ").slice(0, 300);
-}

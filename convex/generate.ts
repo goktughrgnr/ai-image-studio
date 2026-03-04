@@ -128,13 +128,20 @@ export const generate = action({
         originalIds,
       });
     } catch (e) {
-      const errorMsg = e instanceof Error ? e.message : "Unknown error";
+      const rawMsg = e instanceof Error ? e.message : "Unknown error";
+      // Store sanitized detail for debugging, return generic message to client
+      const isApiError = rawMsg.includes("API error");
+      const storedError = isApiError
+        ? rawMsg.replace(/x-goog-api-key\s*[=:]\s*\S+/gi, "[REDACTED]")
+        : rawMsg;
       await ctx.runMutation(internal.generations.updateStatus, {
         id: args.generationId,
         status: "failed",
-        error: errorMsg,
+        error: storedError.slice(0, 300),
       });
-      throw new Error(errorMsg);
+      throw new Error(
+        isApiError ? "Image generation service error. Please try again." : rawMsg,
+      );
     }
   },
 });
@@ -262,7 +269,13 @@ async function callGemini(
 }
 
 function sanitizeExternalError(errorText: string): string {
-  return errorText.replace(/\s+/g, " ").slice(0, 300);
+  // Strip potential API keys, tokens, or sensitive headers from error text
+  return errorText
+    .replace(/\s+/g, " ")
+    .replace(/key[=:]\s*\S+/gi, "key=[REDACTED]")
+    .replace(/token[=:]\s*\S+/gi, "token=[REDACTED]")
+    .replace(/authorization[=:]\s*\S+/gi, "authorization=[REDACTED]")
+    .slice(0, 200);
 }
 
 function validateArgs(args: {
